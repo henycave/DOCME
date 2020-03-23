@@ -1,4 +1,4 @@
-
+import 'dart:collection';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -17,7 +17,7 @@ enum FormType{
   Register
 }
 
-  class _LoginPageState extends State<LoginPage>{
+class _LoginPageState extends State<LoginPage>{
 
   final formKey = new GlobalKey<FormState>();
   final db = Firestore.instance;
@@ -37,7 +37,7 @@ enum FormType{
     if(form.validate())
       return true;
 
-      return false;
+    return false;
   }
 
   void validateAndSubmit() async{
@@ -46,16 +46,16 @@ enum FormType{
         if (_formType == FormType.login){
 
           AuthResult result = await FirebaseAuth.instance.signInWithEmailAndPassword(email: _email, password: _password);
-        print('signed in : ${result.user.uid}');
+          print('signed in : ${result.user.uid}');
           if (result.user.uid != null) {
             Navigator.push(context, MaterialPageRoute(builder: (context) => ListPage()),
             );
-      }
+          }
         }
         else{
           AuthResult result = await FirebaseAuth.instance.createUserWithEmailAndPassword(email: _email, password: _password);
           //print('registerd user: ${user.uid}');
-            await db.collection("users").document(_email).setData({'Fname': _fName, 'Lname': _lName, 'user name': _userName,'mobile': _mobile,'Gender': _gender});
+          await db.collection("users").document(_email).setData({'Fname': _fName, 'Lname': _lName, 'user name': _userName,'mobile': _mobile,'Gender': _gender});
           print('registrerd user: ${result.user.uid}');
           if (result.user.uid != null) {
             Navigator.push(
@@ -69,7 +69,7 @@ enum FormType{
 
 
         }
-    }
+      }
       catch(e){
         print('Error: $e');
       }
@@ -79,7 +79,7 @@ enum FormType{
   void moveToRegister(){
     formKey.currentState.reset();
     setState(() {
-        _formType = FormType.Register;
+      _formType = FormType.Register;
     });
 
   }
@@ -94,98 +94,124 @@ enum FormType{
 
   @override
   Widget build(BuildContext context) {
-    return new Scaffold(
-      //backgroundColor: Color(0xFFDF8E33),
-
-      //resizeToAvoidBottomPadding: false,
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: Scaffold(
+      resizeToAvoidBottomPadding: false,
       resizeToAvoidBottomInset: false,
       appBar: new AppBar(
-        backgroundColor: Color.fromRGBO(0,128,0,0.8),
-        title: _title(),
+        title: new Text('ሰነድ'),
+        backgroundColor: Colors.deepOrange,
       ),
-        body: new Container(
-          decoration: new BoxDecoration(
-            image: new DecorationImage(image: new AssetImage("assets/images/go.jpg"), fit: BoxFit.cover,),
+      body: new Container(
+        padding: EdgeInsets.all(10.0),
+        child: new Form(
+          key: formKey,
+          child: new Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children:
+            buildInputs()+buildSubmitButton(),
           ),
-          padding: EdgeInsets.all(16.0),
-          child: new Form(
-            key: formKey,
-            child: new Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children:
-              buildInputs()+buildSubmitButton(),
-            ),),
         ),
+      ),
+    ),
     );
+
   }
 
   List<Widget> buildInputs(){
+
     if(_formType == FormType.login) {
-      return [
-        new TextFormField(
-          decoration: new InputDecoration(labelText: 'Email', labelStyle: new TextStyle(fontSize: 20.0, color: Colors.white), ),
-          validator: (value) => value.isEmpty ? 'Email can\'t be empty' : null,
-          onSaved: (value) => _email = value,
-          style: new TextStyle(color: Colors.white),
+      return [Container(
+        margin: EdgeInsets.symmetric(vertical: 5),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            _title2(),
+            SizedBox(
+              height: 0,
+            ),
+            new TextFormField(
+              decoration: new InputDecoration(labelText: 'ኢሜይል',
+                border: InputBorder.none,
+                fillColor: Color(0xfff3f3f4),
+                filled: true,
+                contentPadding: new EdgeInsets.symmetric(vertical: 10.0, horizontal: 10.0),),
+              validator: (value) => value.isEmpty ? 'እባክዎን ኢሜይል ይሙሉ' : null,
+              onSaved: (value) => _email = value,
+            ),
+            SizedBox(
+              height: 10,
+            ),
+            new TextFormField(
+              decoration: new InputDecoration(
+                labelText: 'ይለፍ ቃል',
+                border: InputBorder.none,
+                fillColor: Color(0xfff3f3f4),
+                filled: true,
+                contentPadding: new EdgeInsets.symmetric(vertical: 10.0, horizontal: 10.0),
+              ),
+              obscureText: true,
+              validator: (value) =>
+              value.isEmpty
+                  ? 'እባክዎን የይለፍ ቃል ይሙሉ'
+                  : null,
+              onSaved: (value) => _password = value,
+            ),
+          ],
         ),
-        new TextFormField(
-          decoration: new InputDecoration(labelText: 'password', labelStyle: new TextStyle(fontSize: 20.0, color: Colors.white),),
-          obscureText: true,
-          validator: (value) =>
-          value.isEmpty
-              ? 'password can\'t be empty'
-              : null,
-          onSaved: (value) => _password = value,
-          style: new TextStyle(color: Colors.white),
-        ),
-      ];
+      ),];
     }
     else{
       return [
-        new TextFormField(
+        Container(
+          margin: EdgeInsets.symmetric(vertical: 5),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              _title(),
+              SizedBox(
+                height: 0,
 
-          decoration: new InputDecoration(labelText: 'First name', labelStyle: new TextStyle(fontSize: 20.0, color: Colors.white),),
-          validator: (value) => value.isEmpty ? 'first name can\'t be empty' : null,
-          onSaved: (value) => _fName = value,
-          style: new TextStyle(color: Colors.white),
-
-        ),
-        new TextFormField(
-          decoration: new InputDecoration(labelText: 'Last name', labelStyle: new TextStyle(fontSize: 20.0, color: Colors.white),),
-          validator: (value) => value.isEmpty ? 'last name can\'t be empty' : null,
-          onSaved: (value) => _lName = value,
-          style: new TextStyle(color: Colors.white),
-        ),
-        new TextFormField(
-          decoration: new InputDecoration(labelText: 'user name', labelStyle: new TextStyle(fontSize: 20.0, color: Colors.white),),
-          validator: (value) => value.isEmpty ? 'name can\'t be empty' : null,
-          onSaved: (value) => _userName = value,
-          style: new TextStyle(color: Colors.white),
-        ),
-        new TextFormField(
-          decoration: new InputDecoration(labelText: 'Email', labelStyle: new TextStyle(fontSize: 20.0, color: Colors.white),),
-          validator: (value) => value.isEmpty ? 'name can\'t be empty' : null,
-          onSaved: (value) => _email = value,
-          style: new TextStyle(color: Colors.white),
-        ),
-        new TextFormField(
-          decoration: new InputDecoration(labelText: 'Phone number', labelStyle: new TextStyle(fontSize: 20.0, color: Colors.white),),
-          validator: (value) => value.isEmpty ? 'name can\'t be empty' : null,
-          onSaved: (value) => _mobile = value,
-          style: new TextStyle(color: Colors.white),
-        ),
-        new TextFormField(
-          decoration: new InputDecoration(labelText: 'Gender', labelStyle: new TextStyle(fontSize: 20.0, color: Colors.white),),
-          validator: (value) => value.isEmpty ? 'name can\'t be empty' : null,
-          onSaved: (value) => _gender = value,
-          style: new TextStyle(color: Colors.white),
-        ),
-        new TextFormField(
-          decoration: new InputDecoration(labelText: 'password', labelStyle: new TextStyle(fontSize: 20.0, color: Colors.white),),
-          obscureText: true,
-          validator: (value) => value.isEmpty ? 'password can\'t be empty' : null,
-          onSaved: (value) => _password = value,
-          style: new TextStyle(color: Colors.white),
+              ),
+              new TextFormField(
+                decoration: new InputDecoration(labelText: 'የመጀመሪያ ስም'),
+                validator: (value) => value.isEmpty ? 'እባክዎን የመጀመሪያ ስም ይሙሉ' : null,
+                onSaved: (value) => _fName = value,
+              ),
+              new TextFormField(
+                decoration: new InputDecoration(labelText: 'የአያት ሥም'),
+                validator: (value) => value.isEmpty ? 'እባክዎን የአያት ሥም ይሙሉ' : null,
+                onSaved: (value) => _lName = value,
+              ),
+              new TextFormField(
+                decoration: new InputDecoration(labelText: 'የተጠቃሚ ስም'),
+                validator: (value) => value.isEmpty ? 'እባክዎን የአያት ሥም ይሙሉ' : null,
+                onSaved: (value) => _userName = value,
+              ),
+              new TextFormField(
+                decoration: new InputDecoration(labelText: 'ኢሜይል'),
+                validator: (value) => value.isEmpty ? 'እባክዎን ኢሜይል ይሙሉ' : null,
+                onSaved: (value) => _email = value,
+              ),
+              new TextFormField(
+                decoration: new InputDecoration(labelText: 'ስልክ ቁጥር'),
+                validator: (value) => value.isEmpty ? 'እባክዎን ስልክ ቁጥር ይሙሉ' : null,
+                onSaved: (value) => _mobile = value,
+              ),
+              new TextFormField(
+                decoration: new InputDecoration(labelText: 'ጾታ'),
+                validator: (value) => value.isEmpty ? 'እባክዎን ጾታ ይሙሉ' : null,
+                onSaved: (value) => _gender = value,
+              ),
+              new TextFormField(
+                decoration: new InputDecoration(labelText: 'የይለፍ ቃል'),
+                obscureText: true,
+                validator: (value) => value.isEmpty ? 'እባክዎን የይለፍ ቃል ይሙሉ' : null,
+                onSaved: (value) => _password = value,
+              ),
+            ],
+          ),
         ),
       ];
     }
@@ -195,12 +221,12 @@ enum FormType{
     if(_formType == FormType.login) {
       return [
         new RaisedButton(
-          child: new Text('Login', style: new TextStyle(fontSize: 20.0),),
+          child: new Text('ይግቡ', style: new TextStyle(fontSize: 20.0),),
           onPressed: validateAndSubmit,
         ),
         new FlatButton(
           child: new Text(
-            'create an account', style: new TextStyle(fontSize: 20.0, color: Colors.white), ),
+            'መለያ ይፍጠሩ', style: new TextStyle(fontSize: 20.0),),
           onPressed: moveToRegister,
         )
       ];
@@ -208,39 +234,68 @@ enum FormType{
     else{
       return [
         new RaisedButton(
-          child: new Text('create an account', style: new TextStyle(fontSize: 20.0),),
+          child: new Text('መለያ ይፍጠሩ', style: new TextStyle(fontSize: 20.0),),
           onPressed: validateAndSubmit,
         ),
         new FlatButton(
           child: new Text(
-            'already have an acount? Login', style: new TextStyle(fontSize: 20.0, color: Colors.white ),),
+            'መለያ አልዎት? ይግቡ', style: new TextStyle(fontSize: 20.0),),
           onPressed: moveToLogin,
         )
       ];
     }
   }
-
   Widget _title() {
-    return RichText(
-      textAlign: TextAlign.center,
-      text: TextSpan(
-          text: 'DO',
-          style: GoogleFonts.portLligatSans(
-            textStyle: Theme.of(context).textTheme.display1,
-            fontSize: 30,
-            fontWeight: FontWeight.w700,
-            color: Color(0xffe46b10),
-          ),
-          children: [
-            TextSpan(
-              text: 'C',
-              style: TextStyle(color: Colors.black, fontSize: 30),
+    return Container(
+      margin: EdgeInsets.symmetric(vertical: 10),
+      child: RichText(
+        textAlign: TextAlign.left,
+        text: TextSpan(
+            text: 'ይመ',
+            style: GoogleFonts.portLligatSans(
+              textStyle: Theme.of(context).textTheme.display1,
+              fontSize: 30,
+              fontWeight: FontWeight.w700,
+              color: Color(0xffe46b10),
             ),
-            TextSpan(
-              text: 'ME',
-              style: TextStyle(color: Color(0xffe46b10), fontSize: 30),
-            ),
-          ]),
+            children: [
+              TextSpan(
+                text: 'ዝ',
+                style: TextStyle(color: Colors.black, fontSize: 30),
+              ),
+              TextSpan(
+                text: 'ገቡ',
+                style: TextStyle(color: Color(0xffe46b10), fontSize: 30),
+              ),
+            ]),
+      ),
     );
   }
+  Widget _title2() {
+    return Container(
+      margin: EdgeInsets.symmetric(vertical: 10),
+      child: RichText(
+        textAlign: TextAlign.left,
+        text: TextSpan(
+            text: 'ይ',
+            style: GoogleFonts.portLligatSans(
+              textStyle: Theme.of(context).textTheme.display1,
+              fontSize: 30,
+              fontWeight: FontWeight.w700,
+              color: Color(0xffe46b10),
+            ),
+            children: [
+              TextSpan(
+                text: 'ግ',
+                style: TextStyle(color: Colors.black, fontSize: 30),
+              ),
+              TextSpan(
+                text: 'ቡ',
+                style: TextStyle(color: Color(0xffe46b10), fontSize: 30),
+              ),
+            ]),
+      ),
+    );
+  }
+
 }
